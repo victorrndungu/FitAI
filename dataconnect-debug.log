@@ -1,0 +1,14 @@
+I0218 09:54:51.142501   27396 load.go:37] Reloading schema and connectors...
+I0218 09:54:51.151727   27396 control.go:45] [engine.Service /emulator/254Fit 7cbb] UpdateSchema(): done sources: schema/schema.gql [1384B] 
+I0218 09:54:51.156646   27396 control.go:73] [engine.Service /emulator/254Fit 7cbb] UpdateConnector(default): done sources: connector/mutations.gql [1163B] connector/queries.gql [1855B] 
+I0218 09:54:51.166649   27396 codegen.go:82] [connector "default" javascriptSdk] Generating sources into "/Users/kahindo/Documents/254Fit/254Fit/dataconnect-generated/js/default-connector"
+I0218 09:54:51.171090   27396 collector.go:107] schema extensions wrote into "/Users/kahindo/Documents/254Fit/254Fit/dataconnect/.dataconnect/schema"
+Generated sources: prelude.gql [65151B] 
+I0218 09:54:51.171786   27396 collector.go:107] connector "default" javascriptSdk wrote into "/Users/kahindo/Documents/254Fit/254Fit/dataconnect-generated/js/default-connector"
+Generated sources: index.cjs.js [220B] package.json [634B] index.d.ts [264B] esm/index.esm.js [179B] esm/package.json [17B] 
+I0218 09:54:51.173982   27396 installsdk.go:48] Package @firebasegen/default-connector is already installed. Skipping installation
+I0218 09:54:51.174080   27396 load.go:115] Finished reloading
+I0218 09:54:51.176379   27396 dev.go:95] Listening on address (HTTP + gRPC): 127.0.0.1:9391
+I0218 09:54:51.177148   27396 dev.go:95] Listening on address (HTTP + gRPC): [::1]:9391
+I0218 09:54:53.369221   27396 control.go:45] [engine.Service /emulator/254Fit 4099] UpdateSchema(): done sources: schema/schema.gql [1384B] 
+I0218 09:54:53.369813   27396 control.go:73] [engine.Service /emulator/254Fit 4099] UpdateConnector(default): done sources: connector/mutations.gql [1163B] connector/queries.gql [1855B] 

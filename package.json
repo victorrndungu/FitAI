@@ -11,9 +11,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.19.2",
-    "firebase": "^10.12.3",
-    "firebase-admin": "^12.2.0"
+    "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
+    "express": "^4.21.2",
+    "firebase": "^10.14.1",
+    "firebase-admin": "^12.2.0",
+    "rosetta": "^1.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.24.9",
