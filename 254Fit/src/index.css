@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Fitness app color scheme - Green, Yellow, White */
+    --background: 0 0% 98%;
+    --foreground: 155 100% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 155 100% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 155 100% 15%;
+
+    /* Primary: Vibrant Green */
+    --primary: 155 100% 35%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Secondary: Energetic Yellow */
+    --secondary: 48 100% 55%;
+    --secondary-foreground: 155 100% 15%;
+
+    /* Muted tones */
+    --muted: 155 20% 95%;
+    --muted-foreground: 155 30% 45%;
+
+    /* Accent: Lighter green */
+    --accent: 155 60% 85%;
+    --accent-foreground: 155 100% 20%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 155 20% 90%;
+    --input: 155 20% 94%;
+    --ring: 155 100% 35%;
+
+    /* Custom fitness tokens */
+    --success: 155 100% 35%;
+    --warning: 48 100% 55%;
+    --gradient-primary: linear-gradient(135deg, hsl(155 100% 35%), hsl(155 80% 45%));
+    --gradient-secondary: linear-gradient(135deg, hsl(48 100% 55%), hsl(48 90% 65%));
+    --gradient-hero: linear-gradient(135deg, hsl(155 100% 35%), hsl(48 100% 55%));
+    --shadow-primary: 0 10px 30px -10px hsl(155 100% 35% / 0.3);
+    --shadow-glow: 0 0 40px hsl(155 80% 45% / 0.4);
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Dark mode fitness theme */
+    --background: 155 20% 8%;
+    --foreground: 155 20% 95%;
+
+    --card: 155 15% 10%;
+    --card-foreground: 155 20% 95%;
+
+    --popover: 155 15% 10%;
+    --popover-foreground: 155 20% 95%;
+
+    --primary: 155 100% 45%;
+    --primary-foreground: 155 20% 8%;
+
+    --secondary: 48 100% 60%;
+    --secondary-foreground: 155 20% 8%;
+
+    --muted: 155 10% 15%;
+    --muted-foreground: 155 15% 60%;
+
+    --accent: 155 30% 20%;
+    --accent-foreground: 155 20% 95%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 155 20% 95%;
+
+    --border: 155 10% 18%;
+    --input: 155 10% 18%;
+    --ring: 155 100% 45%;
+
+    /* Dark mode custom tokens */
+    --success: 155 100% 45%;
+    --warning: 48 100% 60%;
+    --gradient-primary: linear-gradient(135deg, hsl(155 100% 45%), hsl(155 80% 55%));
+    --gradient-secondary: linear-gradient(135deg, hsl(48 100% 60%), hsl(48 90% 70%));
+    --gradient-hero: linear-gradient(135deg, hsl(155 100% 45%), hsl(48 100% 60%));
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}

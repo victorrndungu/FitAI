@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>254Fit - Profile</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="app">
+    <header class="top-nav">
+        <button class="nav-btn" onclick="window.location.href='dashboard.html'">←</button>
+        <h1>Profile</h1>
+        <div></div>
+    </header>
+    
+    <main class="page">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #22c55e, #fbbf24); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white;">
+                👤
+            </div>
+            <h2 id="userName">Loading…</h2>
+            <p style="color: #666;" id="userEmail">Loading…</p>
+        </div>
+        
+        <div style="background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px;">
+            <h3>Personal Info</h3>
+            <div style="margin-top: 15px;">
+                <p><strong>Height:</strong> <span id="userHeight">—</span></p>
+                <p><strong>Current Weight:</strong> <span id="userWeight">—</span></p>
+                <p><strong>Goal Weight:</strong> <span id="userGoal">—</span></p>
+                <p><strong>Activity Level:</strong> <span id="userActivity">—</span></p>
+            </div>
+        </div>
+        
+        <div style="background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px;">
+            <h3>Settings</h3>
+            <div style="margin-top: 15px;">
+                <p style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;">Notifications</p>
+                <p style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;">Privacy</p>
+                <p style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;">Units</p>
+                <p style="padding: 10px 0; color: #dc2626; cursor: pointer;" onclick="logout()">Sign Out</p>
+            </div>
+        </div>
+    </main>
+    
+    <script type="module">
+        import { auth } from './auth.js';
+        import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
+
+        const fs = getFirestore();
+        const nameEl = document.getElementById('userName');
+        const emailEl = document.getElementById('userEmail');
+        const heightEl = document.getElementById('userHeight');
+        const weightEl = document.getElementById('userWeight');
+        const goalEl = document.getElementById('userGoal');
+        const activityEl = document.getElementById('userActivity');
+
+        const activityMap = {
+            'sedentary': 'Sedentary',
+            'light': 'Lightly active',
+            'moderate': 'Moderately active',
+            'very': 'Very active',
+            'extra': 'Extra active'
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                // No session: send to sign in
+                window.location.replace('signin.html');
+                return;
+            }
+
+            // Fill from Auth first (will be refined from DB below)
+            nameEl.textContent = user.displayName || (user.email ? user.email.split('@')[0] : 'User');
+            emailEl.textContent = user.email || '';
+
+            try {
+                // Pull profile from Firestore at /users/{uid}
+                const snap = await getDoc(doc(fs, 'users', user.uid));
+                if (snap.exists()) {
+                    const p = snap.data() || {};
+                    // Name/email fallbacks from DB too
+                    const displayName = p.displayName || p.name || user.displayName || (user.email ? user.email.split('@')[0] : 'User');
+                    const email = p.email || user.email || '';
+                    nameEl.textContent = displayName;
+                    emailEl.textContent = email;
+
+                    // Support both old and new key names for profile metrics
+                    const h = p.heightCm ?? p.height ?? null;
+                    const w = p.weightKg ?? p.weight ?? null;
+                    const g = p.weightGoalKg ?? p.weightGoal ?? null;
+                    const a = p.activityLevel ?? null;
+
+                    if (h != null) heightEl.textContent = `${h} cm`;
+                    if (w != null) weightEl.textContent = `${w} kg`;
+                    if (g != null) goalEl.textContent = `${g} kg`;
+                    if (a) activityEl.textContent = activityMap[a] || a;
+                } else {
+                    console.info('[profile] no profile doc in Firestore for', user.uid);
+                }
+            } catch (e) {
+                console.warn('[profile] failed to load profile', e);
+            }
+        });
+
+        // Proper Firebase sign-out
+        window.logout = async function () {
+            try { await signOut(auth); } catch (_) {}
+            window.location.replace('signin.html');
+        }
+    </script>
+</body>
+</html>

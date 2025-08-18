@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>254Fit - Log Food</title>
+    <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Inline helper styles for the search panel */
+    .food-search{margin:16px;padding:12px;border:1px solid #e5e5e5;border-radius:8px;background:#fafafa}
+    .food-search h2{margin:0 0 10px 0;font-size:18px}
+    .food-search .bar{display:flex;gap:8px}
+    .food-search input[type="text"]{flex:1;padding:10px;border:1px solid #ccc;border-radius:6px}
+    .food-search button{padding:10px 14px;border:0;border-radius:6px;background:#1a73e8;color:#fff;cursor:pointer}
+    .food-search ul{list-style:none;margin:12px 0 0 0;padding:0;max-height:340px;overflow:auto}
+    .food-search .result-item{padding:10px;margin-bottom:8px;border:1px solid #e5e5e5;border-radius:8px;background:#fff}
+    .food-search .result-details{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+    .food-search .result-name{font-weight:600}
+    .food-search .nutritional-info{font-size:12px;color:#555}
+    .food-search .portion-adjust{display:flex;align-items:center;gap:6px}
+    .food-search .portion-input{width:90px;padding:6px}
+    .food-search .add-button{padding:8px 10px;border:1px solid #1a73e8;background:#e8f1ff;color:#1a73e8;border-radius:6px;cursor:pointer}
+    /* Modal styles */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:1000}
+    .modal.open{display:flex}
+    .modal-card{width:min(800px,92vw);max-height:80vh;overflow:auto;background:#fff;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #eee}
+    .modal-title{font-size:18px;font-weight:600}
+    .modal-close{background:transparent;border:0;font-size:20px;cursor:pointer}
+    .modal-body{padding:16px}
+
+    /* Tabs and meal list */
+    .tab{padding:8px 12px;border:1px solid #ddd;background:#fff;border-radius:6px;cursor:pointer}
+    .tab.active{background:#e8f1ff;border-color:#1a73e8;color:#1a73e8}
+    .items{list-style:none;margin:6px 0 14px 0;padding:0}
+    .items li{padding:6px 8px;border-bottom:1px solid #eee}
+    .muted{color:#777}
+    .totals{margin:10px 0;font-weight:600}
+  </style>
+</head>
+<body class="app">
+    <header class="top-nav">
+        <button class="nav-btn" onclick="window.location.href='notifications.html'">🔔</button>
+        <h1>Log Food</h1>
+        <button class="nav-btn" onclick="window.location.href='profile.html'">👤</button>
+    </header>
+    
+    <main class="page">
+        <button class="add-food-btn">+ Add Food</button>
+        <div class="date-nav" style="display:flex;gap:12px;align-items:center;margin:12px 0;">
+          <button id="prevDate" type="button">← Prev</button>
+          <div id="dateLabel" class="muted" style="min-width:120px;text-align:center;">Today</div>
+          <input id="datePicker" type="date" style="padding:6px 8px;border:1px solid #ddd;border-radius:6px" />
+          <button id="nextDate" type="button">Next →</button>
+        </div>
+        <!-- Food Search Modal -->
+        <div id="foodSearchModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+          <div class="modal-card">
+            <div class="modal-header">
+              <div class="modal-title">Search Food</div>
+              <button class="modal-close" id="closeFoodSearch" aria-label="Close">×</button>
+            </div>
+            <div class="modal-body">
+              <!-- Meal selector -->
+              <div class="meal-row" style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+                <label for="mealSelect" style="min-width:60px;">Meal:</label>
+                <select id="mealSelect">
+                  <option>Breakfast</option>
+                  <option>Lunch</option>
+                  <option>Dinner</option>
+                  <option>Snacks</option>
+                </select>
+              </div>
+
+              <!-- Tabs -->
+              <div class="tabs" style="display:flex;gap:8px;margin:8px 0 12px;">
+                <button id="tabSearch" class="tab active" type="button">Search</button>
+                <button id="tabMenu" class="tab" type="button">Kenyan Menu</button>
+              </div>
+
+              <!-- SEARCH panel (IDs expected by searchFood.js) -->
+              <section class="food-search" id="panelSearch">
+                <div class="bar">
+                  <input id="searchInput" type="text" placeholder="Search foods (e.g., oats, chicken breast, avocado)" />
+                  <button id="searchButton" type="button">Search</button>
+                </div>
+                <ul id="resultsList"></ul>
+              </section>
+
+              <!-- KENYAN MENU panel -->
+              <section class="food-search" id="panelMenu" hidden>
+                <ul id="kenyanList"></ul>
+              </section>
+            </div>
+          </div>
+        </div>
+        <div class="food-log">
+          <h3>Breakfast</h3>
+          <ul id="breakfastItems" class="items"></ul>
+          <p class="muted" style="margin:4px 0 0 0">Subtotal: <span id="breakfastTotal">0</span> kcal</p>
+          <p id="breakfastEmpty" class="muted">No items logged</p>
+        </div>
+        
+        <div class="food-log">
+          <h3>Lunch</h3>
+          <ul id="lunchItems" class="items"></ul>
+          <p class="muted" style="margin:4px 0 0 0">Subtotal: <span id="lunchTotal">0</span> kcal</p>
+          <p id="lunchEmpty" class="muted">No items logged</p>
+        </div>
+        
+        <div class="food-log">
+          <h3>Dinner</h3>
+          <ul id="dinnerItems" class="items"></ul>
+          <p class="muted" style="margin:4px 0 0 0">Subtotal: <span id="dinnerTotal">0</span> kcal</p>
+          <p id="dinnerEmpty" class="muted">No items logged</p>
+        </div>
+        
+        <div class="food-log">
+          <h3>Snacks</h3>
+          <ul id="snacksItems" class="items"></ul>
+          <p class="muted" style="margin:4px 0 0 0">Subtotal: <span id="snacksTotal">0</span> kcal</p>
+          <p id="snacksEmpty" class="muted">No items logged</p>
+        </div>
+
+        <div class="totals">Total calories today: <span id="totalCalories">0</span> kcal</div>
+    </main>
+    
+    <nav class="bottom-nav">
+        <button class="nav-item" onclick="window.location.href='dashboard.html'">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Home</span>
+        </button>
+        <button class="nav-item active">
+            <span class="nav-icon">🍎</span>
+            <span class="nav-label">Log Food</span>
+        </button>
+        <button class="nav-item" onclick="window.location.href='chatbot.html'">
+            <span class="nav-icon">💬</span>
+            <span class="nav-label">Chat</span>
+        </button>
+        <button class="nav-item" onclick="window.location.href='activity.html'">
+            <span class="nav-icon">🏃</span>
+            <span class="nav-label">Activity</span>
+        </button>
+    </nav>
+</body>
+<script type="module" src="logFood.js"></script>
+<script type="module" src="searchFood.js"></script>
+<script type="module">
+  // Kenyan menu + Firestore logging
+  import { auth } from './auth.js';
+  import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
+  import { getFirestore, doc, setDoc, collection, addDoc, getDocs, deleteDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
+
+  const fs = getFirestore();
+
+  // Approximate nutrition per 100g (kcal, protein g, fat g, carbs g)
+  const KENYAN_FOODS = [
+    { name: 'Ugali (maize meal)', kcal: 180, protein: 3.4, fat: 0.5, carbs: 39 },
+    { name: 'Sukuma Wiki (braised kale)', kcal: 33, protein: 3.3, fat: 0.6, carbs: 6.6 },
+    { name: 'Githeri (maize & beans)', kcal: 146, protein: 5.5, fat: 1.4, carbs: 27 },
+    { name: 'Chapati (Kenyan)', kcal: 300, protein: 8, fat: 10, carbs: 49 },
+    { name: 'Pilau (beef rice)', kcal: 170, protein: 6, fat: 6, carbs: 22 },
+    { name: 'Mandazi', kcal: 367, protein: 6, fat: 20, carbs: 40 },
+    { name: 'Nyama Choma (beef)', kcal: 250, protein: 26, fat: 17, carbs: 0 },
+    { name: 'Tilapia (fried)', kcal: 190, protein: 26, fat: 8, carbs: 0 },
+    { name: 'Ndengu (mung bean stew)', kcal: 105, protein: 7, fat: 0.4, carbs: 19 },
+    { name: 'Matoke (boiled plantain)', kcal: 122, protein: 1.2, fat: 0.2, carbs: 32 },
+    { name: 'Mukimo', kcal: 150, protein: 4, fat: 3, carbs: 27 },
+    { name: 'Uji (porridge)', kcal: 60, protein: 1.8, fat: 0.7, carbs: 12 },
+    { name: 'Kachumbari', kcal: 32, protein: 1, fat: 0.2, carbs: 7 },
+    { name: 'Chai (tea, milk & sugar)', kcal: 50, protein: 1.6, fat: 1.6, carbs: 8 },
+    { name: 'Smocha', kcal: 280, protein: 9, fat: 12, carbs: 33 },
+    { name: 'Smokie Pasua', kcal: 280, protein: 12, fat: 24, carbs: 2 },
+    { name: 'Boerewors Hotdog', kcal: 290, protein: 12, fat: 22, carbs: 10 },
+    { name: 'Mayai Pasua', kcal: 150, protein: 13, fat: 10, carbs: 1 }
+  ];
+
+  // Utilities
+  function todayISO(){
+    const d = new Date();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    return `${d.getFullYear()}-${m}-${day}`;
+  }
+  function num(n){ return Number.isFinite(n) ? n : 0; }
+  function round2(x){ return Math.round(x*100)/100; }
+
+  // UI elements
+  const mealSelect = document.getElementById('mealSelect');
+  const list = document.getElementById('kenyanList');
+  const totalsEl = document.getElementById('totalCalories');
+  const listsByMeal = {
+    Breakfast: document.getElementById('breakfastItems'),
+    Lunch: document.getElementById('lunchItems'),
+    Dinner: document.getElementById('dinnerItems'),
+    Snacks: document.getElementById('snacksItems')
+  };
+  const emptiesByMeal = {
+    Breakfast: document.getElementById('breakfastEmpty'),
+    Lunch: document.getElementById('lunchEmpty'),
+    Dinner: document.getElementById('dinnerEmpty'),
+    Snacks: document.getElementById('snacksEmpty')
+  };
+  const mealTotalsEls = {
+    Breakfast: document.getElementById('breakfastTotal'),
+    Lunch: document.getElementById('lunchTotal'),
+    Dinner: document.getElementById('dinnerTotal'),
+    Snacks: document.getElementById('snacksTotal')
+  };
+  const totalsState = { Breakfast: 0, Lunch: 0, Dinner: 0, Snacks: 0, all: 0 };
+
+  // Render Kenyan foods with adjustable portion and Add button
+  function renderMenu(){
+    if (!list) return;
+    list.innerHTML = '';
+    KENYAN_FOODS.forEach(food => {
+      const li = document.createElement('li');
+      li.className = 'result-item';
+      li.innerHTML = `
+        <div class="result-details">
+          <div>
+            <div class="result-name">${food.name}</div>
+            <div class="nutritional-info">Per 100g · ${food.kcal} kcal · ${food.protein}g protein · ${food.fat}g fat · ${food.carbs}g carbs</div>
+            <div class="portion-adjust" style="margin-top:6px">
+              <label>Portion (g):</label>
+              <input type="number" class="portion-input" value="100" min="1">
+              <span class="muted">(values auto-adjust)</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:end;gap:6px">
+            <div class="nutritional-info adj"></div>
+            <button class="add-button" type="button">Add</button>
+          </div>
+        </div>`;
+
+      const portion = li.querySelector('.portion-input');
+      const adj = li.querySelector('.nutritional-info.adj');
+      const addBtn = li.querySelector('.add-button');
+
+      function updateAdj(){
+        const g = Math.max(1, Number(portion.value) || 100);
+        const kcal = (food.kcal * g) / 100;
+        const p = (food.protein * g) / 100;
+        const f = (food.fat * g) / 100;
+        const c = (food.carbs * g) / 100;
+        adj.textContent = `${round2(kcal)} kcal · ${round2(p)}g P · ${round2(f)}g F · ${round2(c)}g C`;
+        return { kcal, protein:p, fat:f, carbs:c, grams:g };
+      }
+      updateAdj();
+      portion.addEventListener('input', updateAdj);
+
+      addBtn.addEventListener('click', async () => {
+        const meal = mealSelect ? mealSelect.value : 'Breakfast';
+        const adjVals = updateAdj();
+        await addFood(meal, {
+          name: food.name,
+          calories: round2(adjVals.kcal),
+          protein: round2(adjVals.protein),
+          fat: round2(adjVals.fat),
+          carbs: round2(adjVals.carbs),
+          portion: adjVals.grams,
+          source: 'kenyan-menu'
+        });
+      });
+
+      list.appendChild(li);
+    });
+  }
+
+  function clearLists(){
+    Object.values(listsByMeal).forEach(ul => ul && (ul.innerHTML = ''));
+    Object.values(emptiesByMeal).forEach(p => p && (p.style.display = ''));
+    if (totalsEl) totalsEl.textContent = '0';
+    totalsState.Breakfast = totalsState.Lunch = totalsState.Dinner = totalsState.Snacks = totalsState.all = 0;
+    for (const k in mealTotalsEls){ if (mealTotalsEls[k]) mealTotalsEls[k].textContent = '0'; }
+  }
+
+  function applyItemToUI(meal, item, id){
+    const ul = listsByMeal[meal];
+    const empty = emptiesByMeal[meal];
+    const c = Number(item.calories||0);
+    const p = Number(item.protein||0);
+    const f = Number(item.fat||0);
+    const cb = Number(item.carbs||0);
+    if (ul){
+      const li = document.createElement('li');
+      li.dataset.itemId = id || '';
+      li.dataset.meal = meal;
+      li.dataset.calories = String(c);
+      li.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div>${item.name || 'Item'} — ${c.toFixed(2)} kcal (${p.toFixed(2)}g P, ${f.toFixed(2)}g F, ${cb.toFixed(2)}g C)</div>
+          <button class="del-btn" aria-label="Delete" title="Delete" style="border:1px solid #e11;border-radius:6px;background:#fee;color:#b00;padding:4px 8px;cursor:pointer">✕</button>
+        </div>`;
+      ul.appendChild(li);
+      if (empty) empty.style.display = 'none';
+
+      const del = li.querySelector('.del-btn');
+      if (del){
+        del.addEventListener('click', async () => {
+          await handleDelete(li);
+        });
+      }
+    }
+    totalsState[meal] = round2(totalsState[meal] + c);
+    totalsState.all = round2(totalsState.all + c);
+    if (mealTotalsEls[meal]) mealTotalsEls[meal].textContent = String(totalsState[meal]);
+    if (totalsEl) totalsEl.textContent = String(totalsState.all);
+  }
+
+  async function handleDelete(li){
+    const user = auth.currentUser;
+    if (!user) return;
+    const itemId = li.dataset.itemId;
+    const meal = li.dataset.meal;
+    const calories = Number(li.dataset.calories || '0');
+    if (!itemId || !meal){
+      // If no id (e.g., legacy item), just remove from UI and totals
+      li.remove();
+      totalsState[meal] = round2(totalsState[meal] - calories);
+      totalsState.all = round2(totalsState.all - calories);
+      if (mealTotalsEls[meal]) mealTotalsEls[meal].textContent = String(Math.max(0, totalsState[meal]));
+      if (totalsEl) totalsEl.textContent = String(Math.max(0, totalsState.all));
+      return;
+    }
+    try{
+      const logRef = doc(fs, 'users', user.uid, 'nutritionLogs', activeDateISO);
+      const itemRef = doc(logRef, 'items', itemId);
+      await deleteDoc(itemRef);
+    }catch(e){
+      console.warn('[log-food] delete failed', e);
+      alert('Failed to delete item. Please try again.');
+      return;
+    }
+    // Update UI totals after successful delete
+    li.remove();
+    totalsState[meal] = round2(totalsState[meal] - calories);
+    totalsState.all = round2(totalsState.all - calories);
+    if (mealTotalsEls[meal]) mealTotalsEls[meal].textContent = String(Math.max(0, totalsState[meal]));
+    if (totalsEl) totalsEl.textContent = String(Math.max(0, totalsState.all));
+
+    // If list is empty, show empty state again
+    const ul = listsByMeal[meal];
+    const empty = emptiesByMeal[meal];
+    if (ul && ul.children.length === 0 && empty){
+      empty.style.display = '';
+    }
+  }
+
+  async function addFood(mealType, item){
+    // Ensure user
+    const user = auth.currentUser;
+    if (!user){
+      alert('Please sign in again.');
+      window.location.href = 'signin.html';
+      return;
+    }
+    const dateISO = todayISO();
+
+    // 1) Create/merge daily log doc
+    const logRef = doc(fs, 'users', user.uid, 'nutritionLogs', dateISO);
+    await setDoc(logRef, { dateISO, updatedAt: serverTimestamp() }, { merge: true });
+
+    // 2) Add item in subcollection
+    const docRef = await addDoc(collection(logRef, 'items'), {
+      mealType,
+      ...item,
+      createdAt: serverTimestamp()
+    });
+
+    // 3) Update UI totals + list with the new doc id
+    applyItemToUI(mealType, item, docRef.id);
+  }
+
+  // Render when auth is ready (so mealSelect exists too)
+  onAuthStateChanged(auth, () => {
+    renderMenu();
+  });
+
+  // Date navigation elements
+  const labelEl = document.getElementById('dateLabel');
+  const prevBtn = document.getElementById('prevDate');
+  const nextBtn = document.getElementById('nextDate');
+  const datePicker = document.getElementById('datePicker');
+
+  let activeDateISO = todayISO();
+
+  function labelForISO(iso){
+    if (!iso) return '';
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+  function isTodayISO(iso){
+    return iso === todayISO();
+  }
+
+  async function loadDay(){
+    clearLists();
+    if (labelEl) labelEl.textContent = labelForISO(activeDateISO);
+    if (datePicker) datePicker.value = activeDateISO;
+    if (nextBtn) nextBtn.disabled = isTodayISO(activeDateISO);
+
+    // Load items from Firestore
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const logRef = doc(fs, 'users', user.uid, 'nutritionLogs', activeDateISO);
+    // get items subcollection
+    const itemsCol = collection(logRef, 'items');
+    const itemsSnap = await getDocs(itemsCol);
+
+    itemsSnap.forEach(docSnap => {
+      const it = docSnap.data();
+      const meal = (it.mealType || 'Breakfast');
+      applyItemToUI(meal, it, docSnap.id);
+    });
+  }
+
+  prevBtn && prevBtn.addEventListener('click', () => {
+    const d = new Date(activeDateISO);
+    d.setDate(d.getDate() - 1);
+    activeDateISO = d.toISOString().slice(0,10);
+    loadDay();
+  });
+  nextBtn && nextBtn.addEventListener('click', () => {
+    const d = new Date(activeDateISO);
+    d.setDate(d.getDate() + 1);
+    const t = todayISO();
+    activeDateISO = (d.toISOString().slice(0,10) > t) ? t : d.toISOString().slice(0,10);
+    loadDay();
+  });
+  if (datePicker) datePicker.addEventListener('change', (e)=>{
+    const v = e.target.value;
+    if (!v) return;
+    // prevent selecting future dates
+    const t = todayISO();
+    activeDateISO = (v > t) ? t : v;
+    loadDay();
+  });
+
+  onAuthStateChanged(auth, () => {
+    loadDay();
+  });
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const tabSearch = document.getElementById('tabSearch');
+    const tabMenu = document.getElementById('tabMenu');
+    const panelSearch = document.getElementById('panelSearch');
+    const panelMenu = document.getElementById('panelMenu');
+
+    function showSearch(){ tabSearch.classList.add('active'); tabMenu.classList.remove('active'); panelSearch.hidden=false; panelMenu.hidden=true; }
+    function showMenu(){ tabMenu.classList.add('active'); tabSearch.classList.remove('active'); panelMenu.hidden=false; panelSearch.hidden=true; }
+
+    tabSearch && tabSearch.addEventListener('click', showSearch);
+    tabMenu && tabMenu.addEventListener('click', showMenu);
+  });
+</script>
+<script>
+  (function(){
+    const addBtn = document.querySelector('.add-food-btn');
+    const modal = document.getElementById('foodSearchModal');
+    const closeBtn = document.getElementById('closeFoodSearch');
+    const input = document.getElementById('searchInput');
+
+    function open(){ modal.classList.add('open'); setTimeout(()=> input && input.focus(), 50); }
+    function close(){ modal.classList.remove('open'); }
+
+    addBtn && addBtn.addEventListener('click', open);
+    closeBtn && closeBtn.addEventListener('click', close);
+    modal && modal.addEventListener('click', (e)=>{ if(e.target === modal) close(); });
+    window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') close(); });
+  })();
+</script>
+</html>
