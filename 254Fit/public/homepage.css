@@ -1,0 +1,170 @@
+/* Reset and base styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ffffff;
+    color: #333333;
+}
+
+.header {
+    background-color: #6db33f; /* Green */
+    color: #ffd700; /* Gold */
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.user-name {
+    font-size: 1rem;
+    margin-right: 20px;
+}
+
+.notification-icon, .profile-icon {
+    flex: 0 0 auto;
+}
+
+.notification-icon {
+    position: relative;
+}
+
+.notification-icon img {
+    width: 24px;
+    height: 24px;
+}
+
+.notification-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 0.8rem;
+}
+
+.profile-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.profile-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.main {
+    padding: 20px;
+}
+
+.progress-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.progress-ring {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin-right: 20px;
+}
+
+.ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 10px solid #cccccc; /* Gray */
+    clip: rect(0, 75px, 150px, 0);
+}
+
+.ring::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 50%;
+    height: 100%;
+    border-radius: 50%;
+    background: conic-gradient(green 0deg, green 50%, gold 50%, gold 100%); /* Green to Gold */
+    transform: rotate(-90deg);
+}
+
+.ring-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.ring-value {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.ring-unit {
+    font-size: 0.8rem;
+}
+
+.progress-info {
+    flex: 1;
+}
+
+.goal {
+    font-weight: bold;
+}
+
+.weight-graph-container {
+    margin-top: 20px;
+}
+
+.navigation {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #fada27; /* Gold */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px 0;
+    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1); /* Optional: Adds a shadow */
+}
+
+.nav-item {
+    text-align: center;
+    flex: 1;
+    color: #333333;
+    text-decoration: none;
+}
+
+.nav-item img {
+    width: 24px;
+    height: 24px;
+}
+
+.nav-item.active {
+    color: #4ed03d; /* Green */
+}

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>254Fit - Ask</title>
+    <link rel="stylesheet" href="ask.css">
+    <style>
+      .response-container{max-height:60vh;overflow-y:auto;padding:12px;}
+      .chat-thread{display:flex;flex-direction:column;gap:8px;}
+      .chat-thread .msg{padding:10px;border-radius:10px;font-size:14px;line-height:1.4;}
+      .chat-thread .msg.user{background:#e8f1ff;align-self:flex-end;}
+      .chat-thread .msg.assistant{background:#f5f5f5;}
+      .response-container.loading::after{content:'Thinking…';display:block;margin-top:6px;color:#666;font-style:italic;}
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="notifications.html" class="notification-icon">
+            <img src="bell.png" alt="Notifications">
+            <span class="notification-count">3</span>
+        </a>
+        <div class="title">254Fit - Ask</div>
+        <a href="profile.html" class="profile-icon">
+            <img src="profile.png" alt="Profile">
+        </a>
+    </header>
+    <main class="main">
+        <div class="ask-container">
+            <textarea id="questionInput" placeholder="Ask your health and wellness question here..."></textarea>
+            <button id="sendButton">Send</button>
+        </div>
+        <div class="response-container" id="responseContainer">
+          <div id="chatThread" class="chat-thread" role="log" aria-live="polite" aria-relevant="additions">
+            <!-- Messages will appear here -->
+          </div>
+        </div>
+    </main>
+    <nav class="navigation">
+        <a href="homepage.html" class="nav-item">
+            <img src="icons/dashboard.png" alt="Dashboard"> Dashboard
+        </a>
+        <a href="logFood.html" class="nav-item">
+            <img src="icons/log-food.png" alt="Log Food"> Log Food
+        </a>
+        <a href="ask.html" class="nav-item active">
+            <img src="icons/ask.png" alt="Ask"> Ask
+        </a>
+        <a href="activityLog.html" class="nav-item">
+            <img src="icons/activityLog.png" alt="Activity Log"> Goals
+        </a>
+    </nav>
+    <script>
+      (function(){
+        const input = document.getElementById('questionInput');
+        const sendBtn = document.getElementById('sendButton');
+        const container = document.getElementById('responseContainer');
+        const thread = document.getElementById('chatThread');
+
+        function appendMessage(who, text){
+          if(!text) return;
+          const div = document.createElement('div');
+          div.className = 'msg ' + (who === 'user' ? 'user' : 'assistant');
+          div.textContent = text;
+          thread.appendChild(div);
+          thread.scrollTop = thread.scrollHeight;
+        }
+        function setLoading(is){
+          container.classList.toggle('loading', !!is);
+        }
+
+        // Send click: show the user's question immediately; your ask.js should handle the fetch.
+        if (sendBtn) {
+          sendBtn.addEventListener('click', () => {
+            const q = (input?.value || '').trim();
+            if(!q) return;
+            appendMessage('user', q);
+            setLoading(true);
+          });
+        }
+
+        // Event-based integration: if ask.js dispatches a CustomEvent('ai:response', {detail: {text}})
+        window.addEventListener('ai:response', (e) => {
+          setLoading(false);
+          const t = e.detail && (e.detail.text || e.detail);
+          appendMessage('assistant', String(t ?? ''));
+        });
+
+        // Expose helpers so ask.js can push results explicitly
+        window.showAIAnswer = function(text){ setLoading(false); appendMessage('assistant', text); };
+        window.showAIError  = function(err){ setLoading(false); appendMessage('assistant', 'Sorry, something went wrong.'); console.error(err); };
+      })();
+    </script>
+    <script src="ask.js"></script>
+</body>
+</html>

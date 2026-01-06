@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>254Fit - Search Food</title>
+    <link rel="stylesheet" href="searchFood.css">
+</head>
+<body>
+    <header class="header">
+        <a href="notifications.html" class="notification-icon">
+            <img src="bell.png" alt="Notifications">
+            <span class="notification-count">3</span>
+        </a>
+        <div class="title">254Fit - Search Food</div>
+        <a href="profile.html" class="profile-icon">
+            <img src="profile-picture.png" alt="Profile Picture">
+        </a>
+    </header>
+    <main class="main">
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search for a food...">
+            <button id="searchButton">Search</button>
+        </div>
+        <div class="history-container">
+            <h2>History</h2>
+            <ul id="historyList">
+                <!-- History items will be dynamically added here -->
+            </ul>
+        </div>
+        <div class="results-container">
+            <h2>Search Results</h2>
+            <ul id="resultsList">
+                <!-- Search results will be dynamically added here -->
+            </ul>
+        </div>
+    </main>
+    <nav class="navigation">
+        <a href="homepage.html" class="nav-item">
+            <img src="icons/dashboard.png" alt="Dashboard"> Dashboard
+        </a>
+        <a href="log-food.html" class="nav-item active">
+            <img src="icons/log-food.png" alt="Log Food"> Log Food
+        </a>
+        <a href="ask.html" class="nav-item">
+            <img src="icons/ask.png" alt="Ask"> Ask
+        </a>
+        <a href="goals.html" class="nav-item">
+            <img src="icons/goals.png" alt="Goals"> Goals
+        </a>
+    </nav>
+    <script src="searchFood.js"></script>
+</body>
+</html>

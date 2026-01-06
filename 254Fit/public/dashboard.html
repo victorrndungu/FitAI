@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>254Fit - Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px}
+    .row{display:flex;align-items:center;gap:10px}
+    .right{margin-left:auto}
+    .btn{appearance:none;border:1px solid #d1d5db;background:#fff;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer}
+    .btn-primary{background:#22c55e;border-color:#22c55e;color:#fff}
+    .muted{color:#6b7280}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50}
+    .modal.open{display:flex}
+    .modal-card{background:#fff;border-radius:12px;max-width:420px;width:92%;padding:16px;border:1px solid #e5e7eb}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="top-nav">
+      <button class="nav-btn" onclick="window.location.href='notifications.html'">🔔</button>
+      <h1>Dashboard</h1>
+      <button class="nav-btn" onclick="window.location.href='profile.html'">👤</button>
+    </header>
+
+    <main class="main-content">
+      <section class="card">
+        <div class="row">
+          <h2 style="margin:0">Today's Calories</h2>
+          <span class="muted" id="calorieSubtitle" style="margin-left:auto"></span>
+          <button id="changeIntakeGoalBtn" class="btn" style="margin-left:8px">Change Intake Goal</button>
+          <button id="changeBurnGoalBtn" class="btn" style="margin-left:8px">Change Spend Goal</button>
+        </div>
+
+        <div class="row" style="gap:22px;justify-content:center; align-items:flex-start; margin-top:12px; flex-wrap:wrap">
+          <!-- Intake ring -->
+          <div style="position:relative; display:flex; flex-direction:column; align-items:center">
+            <svg width="200" height="200" viewBox="0 0 200 200">
+              <circle cx="100" cy="100" r="80" stroke="#e5e5e5" stroke-width="18" fill="none" />
+              <circle id="ringIntake" cx="100" cy="100" r="80" stroke="#22c55e" stroke-width="18" fill="none"
+                      stroke-dasharray="502.65" stroke-dashoffset="502.65" transform="rotate(-90 100 100)" />
+            </svg>
+            <div style="position:absolute; top:78px; text-align:center">
+              <div id="intakeCenter" style="font-weight:700;font-size:24px">0</div>
+              <div class="muted" id="intakeGoalText" style="font-size:12px">goal: 2,000 cal</div>
+            </div>
+            <div class="muted" style="margin-top:6px">Intake (kcal)</div>
+          </div>
+
+          <!-- Spend ring -->
+          <div style="position:relative; display:flex; flex-direction:column; align-items:center">
+            <svg width="200" height="200" viewBox="0 0 200 200">
+              <circle cx="100" cy="100" r="80" stroke="#e5e5e5" stroke-width="18" fill="none" />
+              <circle id="ringBurn" cx="100" cy="100" r="80" stroke="#f59e0b" stroke-width="18" fill="none"
+                      stroke-dasharray="502.65" stroke-dashoffset="502.65" transform="rotate(-90 100 100)" />
+            </svg>
+            <div style="position:absolute; top:78px; text-align:center">
+              <div id="burnCenter" style="font-weight:700;font-size:24px">0</div>
+              <div class="muted" id="burnGoalText" style="font-size:12px">goal: 500 cal</div>
+            </div>
+            <div class="muted" style="margin-top:6px">Spend (kcal)</div>
+          </div>
+        </div>
+        <div class="muted" style="text-align:center; margin-top:6px; font-size:12px">Not sure on how to make your targets? <a href="chatbot.html">Ask the chatbot</a> then update your goals.</div>
+      </section>
+
+      <section class="card" style="margin-top:16px">
+        <div class="row" style="justify-content:space-between">
+          <h2 style="margin:0">Weight Progress</h2>
+          <button id="openWeighIn" class="btn">Weigh In</button>
+        </div>
+        <div class="weight-chart" style="margin-top:10px">
+          <canvas id="weightChart" width="520" height="220"></canvas>
+          <div class="chart-legend" style="display:flex;gap:16px;margin-top:8px">
+            <div class="legend-item" style="display:flex;align-items:center;gap:6px">
+              <div class="legend-color current" style="width:12px;height:12px;border-radius:3px;background:#22c55e"></div>
+              <span>Current Weight</span>
+            </div>
+            <div class="legend-item" style="display:flex;align-items:center;gap:6px">
+              <div class="legend-color goal" style="width:12px;height:12px;border-radius:3px;background:#fbbf24"></div>
+              <span>Goal Weight</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button class="nav-item active">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-item" onclick="window.location.href='log-food.html'">
+        <span class="nav-icon">🍎</span>
+        <span class="nav-label">Log Food</span>
+      </button>
+      <button class="nav-item" onclick="window.location.href='chatbot.html'">
+        <span class="nav-icon">💬</span>
+        <span class="nav-label">Chat</span>
+      </button>
+      <button class="nav-item" onclick="window.location.href='activity.html'">
+        <span class="nav-icon">🏃</span>
+        <span class="nav-label">Activity</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Weigh In Modal -->
+  <div id="weighModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h3 style="margin:0 0 10px 0">New Weigh In</h3>
+      <p class="muted" style="margin:0 0 8px 0">Enter your current weight (kg). This updates your profile and the chart.</p>
+      <div class="row">
+        <input id="weighInput" class="form-input" type="number" step="0.1" min="20" max="400" style="flex:1;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px" />
+      </div>
+      <div class="row" style="justify-content:flex-end;margin-top:12px">
+        <button id="weighCancel" class="btn" type="button">Cancel</button>
+        <button id="weighSave" class="btn btn-primary" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth } from './auth.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
+    import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, serverTimestamp, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
+
+    const fs = getFirestore();
+
+    // --- DOM refs ---
+    const ringIntake = document.getElementById('ringIntake');
+    const ringBurn = document.getElementById('ringBurn');
+    const intakeCenter = document.getElementById('intakeCenter');
+    const burnCenter = document.getElementById('burnCenter');
+    const intakeGoalText = document.getElementById('intakeGoalText');
+    const burnGoalText = document.getElementById('burnGoalText');
+    const calorieSubtitle = document.getElementById('calorieSubtitle');
+    const changeIntakeGoalBtn = document.getElementById('changeIntakeGoalBtn');
+    const changeBurnGoalBtn = document.getElementById('changeBurnGoalBtn');
+
+    const weightCanvas = document.getElementById('weightChart');
+
+    const weighModal = document.getElementById('weighModal');
+    const weighOpen = document.getElementById('openWeighIn');
+    const weighCancel = document.getElementById('weighCancel');
+    const weighSave = document.getElementById('weighSave');
+    const weighInput = document.getElementById('weighInput');
+
+    // --- utils ---
+    function todayISO(){ const d=new Date(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${d.getFullYear()}-${m}-${day}`; }
+    const CIRC = 502.65; // 2πr for r=80
+    function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+
+    // --- calorie rings ---
+    async function loadCalories(uid){
+      const dateISO = todayISO();
+      let consumed = 0, burned = 0, intakeGoal = 2000, burnGoal = 500;
+
+      // user goals
+      const uSnap = await getDoc(doc(fs, 'users', uid));
+      if (uSnap.exists()){
+        const u = uSnap.data()||{};
+        if (Number(u.calorieGoal)>0) intakeGoal = Number(u.calorieGoal);
+        if (Number(u.burnGoal)>0) burnGoal = Number(u.burnGoal);
+      }
+
+      // fetch day totals
+      const nItems = await getDocs(collection(doc(fs, 'users', uid, 'nutritionLogs', dateISO), 'items'));
+      nItems.forEach(s=>{ const it=s.data()||{}; consumed += Number(it.calories||0); });
+      const aItems = await getDocs(collection(doc(fs, 'users', uid, 'activityLogs', dateISO), 'items'));
+      aItems.forEach(s=>{ const it=s.data()||{}; burned += Number(it.calories||0); });
+
+      // pct
+      const pctIn = clamp01(intakeGoal>0 ? consumed/intakeGoal : 0);
+      const pctBurn = clamp01(burnGoal>0 ? burned/burnGoal : 0);
+
+      // update rings
+      ringIntake?.setAttribute('stroke-dashoffset', String(CIRC * (1 - pctIn)));
+      ringBurn?.setAttribute('stroke-dashoffset', String(CIRC * (1 - pctBurn)));
+
+      // centers & labels
+      intakeCenter.textContent = Math.round(consumed).toLocaleString();
+      burnCenter.textContent = Math.round(burned).toLocaleString();
+      intakeGoalText.textContent = `goal: ${intakeGoal.toLocaleString()} cal`;
+      burnGoalText.textContent = `goal: ${burnGoal.toLocaleString()} cal`;
+      calorieSubtitle.textContent = `${Math.round(consumed)} in · ${Math.round(burned)} out`;
+    }
+
+    // --- weight chart ---
+    function drawWeightChart(points, goalWeight){
+      const ctx = weightCanvas.getContext('2d');
+      const W = weightCanvas.width, H = weightCanvas.height;
+      ctx.clearRect(0,0,W,H);
+
+      const padL = 48, padR = 12, padT = 16, padB = 26;
+      const innerW = W - padL - padR;
+      const innerH = H - padT - padB;
+
+      // draw background grid even if empty
+      ctx.strokeStyle = '#eef2f7';
+      ctx.lineWidth = 1;
+      ctx.font = '11px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
+      ctx.fillStyle = '#6b7280';
+
+      // If no points, just draw 5 horizontal grid lines and return
+      if (!points || points.length === 0){
+        for(let i=0;i<=5;i++){
+          const y = padT + (i*innerH)/5;
+          ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke();
+        }
+        return;
+      }
+
+      // compute y domain with a little padding
+      const minW = Math.min(...points.map(p=>p.w));
+      const maxW = Math.max(...points.map(p=>p.w));
+      let lo = Math.floor(minW - 0.5);
+      let hi = Math.ceil(maxW + 0.5);
+      if (hi - lo < 2) { hi = lo + 2; }
+      const span = hi - lo;
+
+      const xFor = (i)=> padL + (i/(points.length-1)) * innerW;
+      const yFor = (val)=> padT + (1 - (val - lo)/span) * innerH;
+
+      // grid + y labels (5 ticks)
+      for(let i=0;i<=5;i++){
+        const yVal = lo + (span * i)/5;
+        const y = yFor(yVal);
+        ctx.strokeStyle = '#eef2f7';
+        ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke();
+        ctx.fillStyle = '#6b7280';
+        ctx.textAlign = 'right';
+        ctx.fillText(String(Math.round(yVal)), padL-6, y+4);
+      }
+
+      // goal line if present
+      if (Number(goalWeight) > 0){
+        ctx.save();
+        ctx.setLineDash([6,4]);
+        ctx.strokeStyle = '#fbbf24';
+        ctx.beginPath();
+        const gy = yFor(goalWeight);
+        ctx.moveTo(padL, gy); ctx.lineTo(W-padR, gy); ctx.stroke();
+        ctx.restore();
+      }
+
+      // weight line
+      ctx.strokeStyle = '#22c55e';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      points.forEach((p,i)=>{
+        const x = xFor(i);
+        const y = yFor(p.w);
+        if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+
+      // points
+      ctx.fillStyle = '#22c55e';
+      points.forEach((p,i)=>{
+        const x = xFor(i), y = yFor(p.w);
+        ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill();
+      });
+
+      // x labels (first, mid, last + interval)
+      const labelEvery = Math.max(1, Math.ceil(points.length/4));
+      ctx.fillStyle = '#6b7280';
+      ctx.textAlign = 'center';
+      points.forEach((p,i)=>{
+        if (i===0 || i===points.length-1 || i % labelEvery === 0){
+          const d = p.t instanceof Date ? p.t : new Date(p.t||Date.now());
+          const label = (d.getMonth()+1) + '/' + d.getDate();
+          ctx.fillText(label, xFor(i), H - 6);
+        }
+      });
+    }
+
+    async function loadWeighIns(uid){
+      let goalWeight = null;
+      const uSnap = await getDoc(doc(fs, 'users', uid));
+      if (uSnap.exists()){
+        const u = uSnap.data()||{}; if (Number(u.goalWeight)>0) goalWeight = Number(u.goalWeight);
+      }
+      const qRef = query(collection(doc(fs,'users',uid),'weighIns'), orderBy('createdAt','asc'), limit(60));
+      const snap = await getDocs(qRef);
+      const pts = [];
+      snap.forEach(s=>{ const d=s.data()||{}; if (Number(d.weightKg)>0) pts.push({ w:Number(d.weightKg), t:d.createdAt?.toDate?.()||new Date() }); });
+      // if no weigh-ins yet, fall back to current profile weight if available
+      if (pts.length === 0 && uSnap.exists()){
+        const u = uSnap.data()||{};
+        if (Number(u.weightKg)>0){
+          pts.push({ w:Number(u.weightKg), t:new Date() });
+        }
+      }
+      drawWeightChart(pts, goalWeight);
+    }
+
+    // --- weigh-in modal ---
+    function openWeigh(open){ weighModal.classList[open?'add':'remove']('open'); if(open) setTimeout(()=>weighInput.focus(),50); }
+    weighOpen?.addEventListener('click', ()=> openWeigh(true));
+    weighCancel?.addEventListener('click', ()=> openWeigh(false));
+
+    weighSave?.addEventListener('click', async ()=>{
+      const user = auth.currentUser; if(!user) return;
+      const v = Number(weighInput.value);
+      if(!v || v<20 || v>400){ alert('Please enter a valid weight in kg.'); return; }
+      // write weighIn + update profile
+      await addDoc(collection(doc(fs,'users',user.uid),'weighIns'), { weightKg:v, createdAt: serverTimestamp() });
+      await setDoc(doc(fs,'users',user.uid), { weightKg:v, updatedAt: serverTimestamp() }, { merge:true });
+      openWeigh(false);
+      await loadWeighIns(user.uid);
+    });
+
+    changeIntakeGoalBtn?.addEventListener('click', async ()=>{
+      const user = auth.currentUser; if(!user){ window.location.href='signin.html'; return; }
+      const current = (await getDoc(doc(fs,'users',user.uid))).data()?.calorieGoal || 2000;
+      const v = prompt('Set your daily intake goal (kcal):', String(current));
+      if(!v) return; const n = Number(v);
+      if(!Number.isFinite(n) || n < 800 || n > 6000){ alert('Please enter a number between 800 and 6000.'); return; }
+      await setDoc(doc(fs,'users',user.uid), { calorieGoal:n, updatedAt: serverTimestamp() }, { merge:true });
+      await loadCalories(user.uid);
+    });
+
+    changeBurnGoalBtn?.addEventListener('click', async ()=>{
+      const user = auth.currentUser; if(!user){ window.location.href='signin.html'; return; }
+      const current = (await getDoc(doc(fs,'users',user.uid))).data()?.burnGoal || 500;
+      const v = prompt('Set your daily spend goal (kcal):', String(current));
+      if(!v) return; const n = Number(v);
+      if(!Number.isFinite(n) || n < 100 || n > 3000){ alert('Please enter a number between 100 and 3000.'); return; }
+      await setDoc(doc(fs,'users',user.uid), { burnGoal:n, updatedAt: serverTimestamp() }, { merge:true });
+      await loadCalories(user.uid);
+    });
+
+    // --- init ---
+    onAuthStateChanged(auth, async (user)=>{
+      if(!user){ window.location.replace('signin.html'); return; }
+      await loadCalories(user.uid);
+      await loadWeighIns(user.uid);
+    });
+  </script>
+</body>
+</html>

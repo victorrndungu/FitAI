@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FitTracker - Activity</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .activity-card{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;margin:10px 0}
+    .row{display:flex;gap:10px;align-items:center}
+    .muted{color:#6b7280}
+    .form-input{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px}
+    .btn{appearance:none;border:1px solid #d1d5db;background:#fff;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer}
+    .btn-primary{background:#22c55e;border-color:#22c55e;color:#fff}
+    .btn-danger{border-color:#ef4444;background:#fee;color:#b91c1c}
+    .grid{display:grid;grid-template-columns:1fr;gap:10px}
+    @media(min-width:720px){.grid{grid-template-columns:1fr 1fr}}
+    .entry{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px dashed #e5e7eb}
+  </style>
+</head>
+<body class="app">
+  <header class="top-nav">
+    <button class="nav-btn" onclick="window.location.href='notifications.html'">🔔</button>
+    <h1>Activity</h1>
+    <button class="nav-btn" onclick="window.location.href='profile.html'">👤</button>
+  </header>
+
+  <main class="page">
+    <!-- Date navigation & Google Fit link -->
+    <div class="row" style="justify-content:center;margin:6px 0 10px 0">
+      <button id="prevDay" class="btn" type="button">◀</button>
+      <div id="dateLabel" class="muted" style="min-width:220px;text-align:center;font-weight:600">Today</div>
+      <button id="nextDay" class="btn" type="button">▶</button>
+      <input id="datePicker" type="date" style="padding:8px 10px;border:1px solid #ddd;border-radius:8px" />
+      <button id="linkGoogleFit" class="btn" type="button">Link Google Fit</button>
+    </div>
+
+    <!-- Quick stats for the day -->
+    <div class="grid">
+      <div class="activity-card">
+        <div class="activity-info">
+          <h3>Steps</h3>
+          <p class="muted">From manual logs or Google Fit</p>
+        </div>
+        <div class="activity-time" id="stepsTotal">0</div>
+      </div>
+      <div class="activity-card">
+        <div class="activity-info">
+          <h3>Active Minutes</h3>
+          <p class="muted">Sum of logged activities</p>
+        </div>
+        <div class="activity-time" id="minutesTotal">0 min</div>
+      </div>
+      <div class="activity-card">
+        <div class="activity-info">
+          <h3>Calories Burned</h3>
+          <p class="muted">From logged activities</p>
+        </div>
+        <div class="activity-time" id="caloriesTotal">0 cal</div>
+      </div>
+      <div class="activity-card">
+        <div class="activity-info">
+          <h3>Distance</h3>
+          <p class="muted">Logged distance</p>
+        </div>
+        <div class="activity-time" id="distanceTotal">0 km</div>
+      </div>
+    </div>
+
+    <!-- Log an activity -->
+    <div class="activity-card" style="flex-direction:column;align-items:stretch">
+      <h3 style="margin:0 0 8px 0">Add Activity</h3>
+      <div class="grid">
+        <div>
+          <label class="muted">Type</label>
+          <select id="actType" class="form-input">
+            <option value="walking">Walking</option>
+            <option value="running">Running</option>
+            <option value="cycling">Cycling</option>
+            <option value="swimming">Swimming</option>
+            <option value="strength">Strength Training</option>
+            <option value="yoga">Yoga</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <div>
+          <label class="muted">Intensity</label>
+          <select id="actIntensity" class="form-input">
+            <option value="light">Light</option>
+            <option value="moderate" selected>Moderate</option>
+            <option value="vigorous">Vigorous</option>
+          </select>
+        </div>
+        <div>
+          <label class="muted">Duration (min)</label>
+          <input id="actMinutes" class="form-input" type="number" min="1" value="30" />
+        </div>
+        <div>
+          <label class="muted">Distance (km) <span class="muted">(optional)</span></label>
+          <input id="actDistance" class="form-input" type="number" min="0" step="0.1" value="0" />
+        </div>
+        <div>
+          <label class="muted">Steps <span class="muted">(optional)</span></label>
+          <input id="actSteps" class="form-input" type="number" min="0" step="1" value="0" />
+        </div>
+        <!-- Estimated Calories input removed -->
+      </div>
+      <p id="calPreview" class="muted" style="margin-top:6px">Estimated: 0 cal</p>
+      <div class="row" style="justify-content:flex-end;margin-top:10px">
+        <button id="addActBtn" class="btn btn-primary" type="button">Add Activity</button>
+      </div>
+      <p class="muted" id="weightNote" style="margin-top:6px"></p>
+    </div>
+    <div id="fitModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;align-items:center;justify-content:center">
+      <div style="background:#fff;border-radius:12px;max-width:420px;width:92%;padding:16px;border:1px solid #e5e7eb">
+        <h3 style="margin:0 0 8px 0">Google Fit</h3>
+        <p class="muted" style="margin:0 0 10px 0">Full Google Fit sync needs OAuth on a backend. For now, you can quickly add today’s step count here.</p>
+        <div class="grid">
+          <div>
+            <label class="muted">Steps</label>
+            <input id="fitSteps" class="form-input" type="number" min="0" step="1" value="0" />
+          </div>
+          <div>
+            <label class="muted">Minutes <span class="muted">(optional)</span></label>
+            <input id="fitMinutes" class="form-input" type="number" min="0" step="1" value="30" />
+          </div>
+        </div>
+        <p class="muted" style="margin-top:8px">We estimate distance by steps×0.00078 km and calories using walking METs with your weight.</p>
+        <div class="row" style="justify-content:flex-end;margin-top:10px">
+          <button id="fitClose" class="btn" type="button">Close</button>
+          <button id="fitSave" class="btn btn-primary" type="button">Save Steps</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logged activities list -->
+    <div class="activity-card" style="flex-direction:column;align-items:stretch">
+      <h3 style="margin:0 0 8px 0">Day's Activities</h3>
+      <div id="entries"></div>
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-item" onclick="window.location.href='dashboard.html'">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='log-food.html'">
+      <span class="nav-icon">🍎</span>
+      <span class="nav-label">Log Food</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='chatbot.html'">
+      <span class="nav-icon">💬</span>
+      <span class="nav-label">Chat</span>
+    </button>
+    <button class="nav-item active">
+      <span class="nav-icon">🏃</span>
+      <span class="nav-label">Activity</span>
+    </button>
+  </nav>
+
+  <script type="module">
+    import { auth } from './auth.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
+    import { getFirestore, doc, setDoc, addDoc, collection, getDoc, getDocs, deleteDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
+    const fs = getFirestore();
+
+    // --- elements ---
+    const dateLabel = document.getElementById('dateLabel');
+    const prevDayBtn = document.getElementById('prevDay');
+    const nextDayBtn = document.getElementById('nextDay');
+    const datePicker = document.getElementById('datePicker');
+
+    const actType = document.getElementById('actType');
+    const actIntensity = document.getElementById('actIntensity');
+    const actMinutes = document.getElementById('actMinutes');
+    const actDistance = document.getElementById('actDistance');
+    const actSteps = document.getElementById('actSteps');
+    // Calories preview and Fit modal elements
+    const calPreview = document.getElementById('calPreview');
+    const fitModal = document.getElementById('fitModal');
+    const fitSteps = document.getElementById('fitSteps');
+    const fitMinutes = document.getElementById('fitMinutes');
+    const fitOpen = document.getElementById('linkGoogleFit');
+    const fitClose = document.getElementById('fitClose');
+    const fitSave = document.getElementById('fitSave');
+    const addActBtn = document.getElementById('addActBtn');
+
+    const stepsTotal = document.getElementById('stepsTotal');
+    const minutesTotal = document.getElementById('minutesTotal');
+    const caloriesTotal = document.getElementById('caloriesTotal');
+    const distanceTotal = document.getElementById('distanceTotal');
+    const entries = document.getElementById('entries');
+    const weightNote = document.getElementById('weightNote');
+
+
+    // --- date helpers/state ---
+    function todayISO(){ const d=new Date();const m=String(d.getMonth()+1).padStart(2,'0');const day=String(d.getDate()).padStart(2,'0');return `${d.getFullYear()}-${m}-${day}`; }
+    function addDaysISO(iso, delta){ const [y,m,d]=iso.split('-').map(Number); const dt=new Date(y,m-1,d); dt.setDate(dt.getDate()+delta); const mm=String(dt.getMonth()+1).padStart(2,'0'); const dd=String(dt.getDate()).padStart(2,'0'); return `${dt.getFullYear()}-${mm}-${dd}`; }
+    function isTodayISO(iso){ return iso===todayISO(); }
+    function labelForISO(iso){ if(isTodayISO(iso)) return `Today • ${iso}`; if(addDaysISO(iso,1)===todayISO()) return `Yesterday • ${iso}`; return iso; }
+    let activeDateISO = todayISO();
+
+    // --- METs table (approx) ---
+    const METS = {
+      walking: { light: 2.8, moderate: 3.5, vigorous: 4.5 },
+      running: { light: 7, moderate: 9.8, vigorous: 11.5 },
+      cycling: { light: 4, moderate: 6.8, vigorous: 8 },
+      swimming: { light: 5, moderate: 6, vigorous: 8 },
+      strength: { light: 3.5, moderate: 5, vigorous: 6 },
+      yoga: { light: 2.5, moderate: 3, vigorous: 4 },
+      custom: { light: 3, moderate: 5, vigorous: 7 }
+    };
+
+    // --- weight for calorie calculation ---
+    let userWeightKg = 70; // default fallback
+    function updateWeightNote(){ weightNote.textContent = `Calories estimated using ${userWeightKg} kg and standard METs. Update your weight in Profile for higher accuracy.` }
+    async function loadUserWeight(){
+      const user = auth.currentUser; if (!user) return;
+      const snap = await getDoc(doc(fs, 'users', user.uid));
+      if (snap.exists()){
+        const p = snap.data()||{}; const w = Number(p.weightKg||p.weight||0);
+        if (w>0) userWeightKg = w;
+      }
+      updateWeightNote(); refreshCalories();
+    }
+
+    // --- calorie estimation ---
+    function calcCalories(){
+      const type = actType.value; const intensity = actIntensity.value; const mins = Number(actMinutes.value)||0; const mets = (METS[type]||METS.custom)[intensity]||5; 
+      const kcal = (mets * 3.5 * userWeightKg / 200) * mins; // ACSM formula
+      return Math.max(0, Math.round(kcal));
+    }
+    function refreshCalories(){
+      const kcal = calcCalories();
+      if (calPreview) calPreview.textContent = `Estimated: ${kcal} cal`;
+    }
+    [actType, actIntensity, actMinutes].forEach(el => el.addEventListener('input', refreshCalories));
+    // Optional UX tweak: clear staged state if any key field changes
+
+    // --- helpers for entry ---
+    function buildEntryFromForm(){
+      const minutes = Math.max(1, Number(actMinutes.value)||0);
+      const distanceKm = Math.max(0, Number(actDistance.value)||0);
+      const steps = Math.max(0, Number(actSteps.value)||0);
+      const calories = calcCalories();
+      const type = actType.value; const intensity = actIntensity.value;
+      return { type, intensity, minutes, distanceKm, steps, calories };
+    }
+
+    // --- totals & list rendering ---
+    function resetTotals(){ stepsTotal.textContent='0'; minutesTotal.textContent='0 min'; caloriesTotal.textContent='0 cal'; distanceTotal.textContent='0 km'; entries.innerHTML=''; }
+
+    function applyEntryToUI(id, it){
+      const row = document.createElement('div');
+      row.className = 'entry';
+      row.dataset.id = id;
+      row.dataset.calories = String(Number(it.calories||0));
+      row.dataset.minutes = String(Number(it.minutes||0));
+      row.dataset.steps = String(Number(it.steps||0));
+      row.dataset.distance = String(Number(it.distanceKm||0));
+      row.innerHTML = `
+        <div>
+          <div><strong>${(it.type||'Activity').toUpperCase()}</strong> • ${(it.intensity||'moderate')} • ${Number(it.minutes||0)} min</div>
+          <div class="muted">${Number(it.calories||0)} cal • ${Number(it.distanceKm||0)} km • ${Number(it.steps||0)} steps</div>
+        </div>
+        <button class="btn btn-danger del">Delete</button>
+      `;
+      row.querySelector('.del').addEventListener('click', async ()=>{ await deleteEntry(id, row); });
+      entries.appendChild(row);
+
+      // update totals
+      const cT = Number((caloriesTotal.textContent||'0').toString().replace(/\D/g,''))||0; caloriesTotal.textContent = String(cT + Number(it.calories||0)) + ' cal';
+      const mT = Number((minutesTotal.textContent||'0').toString().replace(/\D/g,''))||0; minutesTotal.textContent = String(mT + Number(it.minutes||0)) + ' min';
+      const sT = Number(stepsTotal.textContent)||0; stepsTotal.textContent = String(sT + Number(it.steps||0));
+      const dT = Number((distanceTotal.textContent||'0').toString().replace(/[^0-9.]/g,''))||0; distanceTotal.textContent = String((dT + Number(it.distanceKm||0)).toFixed(2)) + ' km';
+    }
+
+    async function deleteEntry(id, row){
+      const user = auth.currentUser; if (!user) return;
+      try{
+        const logRef = doc(fs, 'users', user.uid, 'activityLogs', activeDateISO);
+        await deleteDoc(doc(logRef, 'items', id));
+      }catch(e){ alert('Failed to delete'); return; }
+      // update totals
+      const cT = Number((caloriesTotal.textContent||'0').toString().replace(/\D/g,''))||0; caloriesTotal.textContent = String(Math.max(0, cT - Number(row.dataset.calories||0))) + ' cal';
+      const mT = Number((minutesTotal.textContent||'0').toString().replace(/\D/g,''))||0; minutesTotal.textContent = String(Math.max(0, mT - Number(row.dataset.minutes||0))) + ' min';
+      const sT = Number(stepsTotal.textContent)||0; stepsTotal.textContent = String(Math.max(0, sT - Number(row.dataset.steps||0)));
+      const dT = Number((distanceTotal.textContent||'0').toString().replace(/[^0-9.]/g,''))||0; distanceTotal.textContent = String(Math.max(0, dT - Number(row.dataset.distance||0)).toFixed(2)) + ' km';
+      row.remove();
+    }
+
+    // --- load & add ---
+    async function loadDay(){
+      const user = auth.currentUser; if (!user) return;
+      resetTotals();
+      dateLabel.textContent = labelForISO(activeDateISO);
+      datePicker.value = activeDateISO;
+      nextDayBtn.disabled = isTodayISO(activeDateISO);
+
+      const logRef = doc(fs, 'users', user.uid, 'activityLogs', activeDateISO);
+      const snap = await getDocs(collection(logRef, 'items'));
+      snap.forEach(ds => { applyEntryToUI(ds.id, ds.data()||{}); });
+    }
+
+    async function addActivity(){
+      try{
+        const user = auth.currentUser; if (!user){ window.location.href='signin.html'; return; }
+        const entry = buildEntryFromForm();
+        if (!entry.type){ alert('Select an activity type.'); return; }
+        if (!['light','moderate','vigorous'].includes(entry.intensity)) { alert('Select intensity.'); return; }
+
+        addActBtn.disabled = true; addActBtn.textContent = 'Saving…';
+
+        const logRef = doc(fs, 'users', user.uid, 'activityLogs', activeDateISO);
+        await setDoc(logRef, { dateISO: activeDateISO, updatedAt: serverTimestamp() }, { merge: true });
+        const docRef = await addDoc(collection(logRef, 'items'), { ...entry, createdAt: serverTimestamp() });
+
+        applyEntryToUI(docRef.id, entry);
+
+        addActBtn.disabled = false; addActBtn.textContent = 'Add Activity';
+        // Optional: reset optional inputs
+        // actDistance.value = '0'; actSteps.value = '0';
+        refreshCalories();
+      } catch (e) {
+        console.error('[activity] add failed', e);
+        alert(`Failed to add activity: ${e?.message || e}`);
+        addActBtn.disabled = false; addActBtn.textContent = 'Add Activity';
+      }
+    }
+
+    // --- Google Fit modal logic ---
+    function showFit(open){ if (!fitModal) return; fitModal.style.display = open ? 'flex' : 'none'; }
+    if (fitOpen) fitOpen.addEventListener('click', ()=> showFit(true));
+    if (fitClose) fitClose.addEventListener('click', ()=> showFit(false));
+
+    if (fitSave) fitSave.addEventListener('click', async ()=>{
+      const user = auth.currentUser; if (!user){ window.location.href='signin.html'; return; }
+      const steps = Math.max(0, Number(fitSteps.value)||0);
+      const minutes = Math.max(0, Number(fitMinutes.value)||0);
+      const distanceKm = Number((steps * 0.00078).toFixed(2)); // ~0.78m stride
+      // Use walking-moderate METs for estimate
+      const mets = 3.5; const kcal = Math.round((mets * 3.5 * userWeightKg / 200) * minutes);
+
+      const logRef = doc(fs, 'users', user.uid, 'activityLogs', activeDateISO);
+      await setDoc(logRef, { dateISO: activeDateISO, updatedAt: serverTimestamp() }, { merge: true });
+      const docRef = await addDoc(collection(logRef, 'items'), {
+        type: 'walking', intensity: 'moderate', minutes, distanceKm, steps, calories: kcal, source: 'google-fit-manual', createdAt: serverTimestamp()
+      });
+      applyEntryToUI(docRef.id, { type: 'walking', intensity: 'moderate', minutes, distanceKm, steps, calories: kcal });
+      showFit(false);
+    });
+
+    // --- date nav ---
+    prevDayBtn.addEventListener('click', ()=>{ activeDateISO = addDaysISO(activeDateISO, -1); loadDay(); });
+    nextDayBtn.addEventListener('click', ()=>{ if(!isTodayISO(activeDateISO)) { activeDateISO = addDaysISO(activeDateISO, +1); loadDay(); } });
+    datePicker.addEventListener('change', (e)=>{ const v=e.target.value; if(v){ const t=todayISO(); activeDateISO = (v>t)? t : v; loadDay(); } });
+
+    // --- auth + init ---
+    console.log('[activity] script loaded');
+    onAuthStateChanged(auth, async (user)=>{
+      if (!user){ window.location.replace('signin.html'); return; }
+      await loadUserWeight();
+      refreshCalories();
+      await loadDay();
+    });
+    addActBtn.addEventListener('click', addActivity);
+  </script>
+</body>
+</html>

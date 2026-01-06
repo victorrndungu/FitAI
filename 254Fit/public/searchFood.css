@@ -1,0 +1,253 @@
+/* Reset and base styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ffffff;
+    color: #333333;
+}
+
+.header {
+    background-color: #6db33f; /* Green */
+    color: #ffd700; /* Gold */
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.notification-icon, .profile-icon {
+    flex: 0 0 auto;
+}
+
+.notification-icon {
+    position: relative;
+}
+
+.notification-icon img {
+    width: 24px;
+    height: 24px;
+}
+
+.notification-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 0.8rem;
+}
+
+.profile-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.profile-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.main {
+    padding: 20px;
+}
+
+.search-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#searchInput {
+    width: 100%;
+    max-width: 600px;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+}
+
+#searchButton {
+    margin-left: 10px;
+    padding: 10px 20px;
+    background-color: #6db33f; /* Green */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#searchButton:hover {
+    background-color: #5a992f;
+}
+
+.history-container {
+    margin-top: 20px;
+}
+
+.history-container h2 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+#historyList {
+    list-style: none;
+    padding: 0;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.history-name {
+    font-weight: bold;
+}
+
+.history-calories {
+    color: #555;
+}
+
+.history-details {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.add-button {
+    background-color: #6db33f; /* Green */
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.add-button:hover {
+    background-color: #5a992f;
+}
+
+.results-container {
+    margin-top: 20px;
+}
+
+.results-container h2 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+#resultsList {
+    list-style: none;
+    padding: 0;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    flex-wrap: wrap;
+}
+
+.result-name {
+    font-weight: bold;
+}
+
+.nutritional-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.result-calories {
+    color: #555;
+}
+
+.result-nutrients {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.portion-adjust {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.portion-adjust label {
+    margin-right: 10px;
+}
+
+.portion-input {
+    width: 60px;
+    padding: 5px;
+    font-size: 1rem;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+}
+
+.add-button {
+    background-color: #6db33f; /* Green */
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-left: 10px;
+    margin-top: 5px;
+}
+
+.add-button:hover {
+    background-color: #5a992f;
+}
+
+.navigation {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #ffd700; /* Gold */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px 0;
+    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1); /* Optional: Adds a shadow */
+}
+
+.nav-item {
+    text-align: center;
+    flex: 1;
+    color: #333333;
+    text-decoration: none;
+}
+
+.nav-item img {
+    width: 24px;
+    height: 24px;
+}
+
+.nav-item.active {
+    color: #6db33f; /* Green */
+}

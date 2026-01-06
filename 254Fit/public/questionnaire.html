@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>254Fit – Onboarding</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Minimal safe defaults if styles.css doesn't cover */
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    .wrap{max-width:720px;margin:40px auto;padding:0 16px}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+    .pad{padding:20px}
+    .title{font-size:24px;font-weight:700;margin:0 0 4px}
+    .sub{color:#666;margin:0 0 16px}
+    .progress{background:#f0f3f9;height:8px;border-radius:999px;overflow:hidden;margin:8px 0 6px}
+    #progressFill{height:100%;width:0;background:#22c55e;transition:width .25s ease}
+    #stepInfo{font-size:12px;color:#666;margin-bottom:12px}
+    .question h2{margin:0 0 6px}
+    .form-input{width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:10px;font-size:16px}
+    .row{display:flex;gap:10px;justify-content:space-between;margin-top:16px}
+    .btn{appearance:none;border:1px solid #d1d5db;background:#fff;border-radius:10px;padding:12px 16px;font-weight:600;cursor:pointer}
+    .btn-primary{background:#22c55e;border-color:#22c55e;color:#fff}
+    .btn[disabled]{opacity:.6;cursor:default}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card pad">
+      <h1 class="title">Let’s personalize your plan</h1>
+      <p class="sub">Answer a few quick questions to set your goals.</p>
+
+      <div class="progress"><div id="progressFill"></div></div>
+      <div id="stepInfo">Step 1 of 5</div>
+
+      <div id="questionContainer"><p>Loading…</p></div>
+
+      <div class="row">
+        <button id="backBtn" class="btn" style="display:none">Back</button>
+        <button id="nextBtn" class="btn btn-primary">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+        import { auth, app } from './auth.js';
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
+
+        let saving = false;
+        function log(...args){ try{ console.log('[questionnaire]', ...args); }catch(_){} }
+        function errToast(msg){ alert(msg); }
+
+        log('firebase projectId', app?.options?.projectId);
+
+        const SAVE_TIMEOUT_MS = 10000; // 10s safety timeout
+        function withTimeout(p, ms, tag='op'){
+          return Promise.race([
+            p,
+            new Promise((_, rej)=> setTimeout(()=> rej(new Error(`${tag} timed out after ${ms}ms`)), ms))
+          ]);
+        }
+
+        let currentStep = 1;
+        const totalSteps = 5;
+        const formData = {};
+
+        const questions = [
+            {
+                title: "What's your height?",
+                subtitle: "This helps us calculate your BMI",
+                field: "heightCm",
+                type: "number",
+                placeholder: "e.g., 175",
+                unit: "cm"
+            },
+            {
+                title: "What's your current weight?",
+                subtitle: "We'll track your progress from here",
+                field: "weightKg",
+                type: "number",
+                placeholder: "e.g., 70",
+                unit: "kg"
+            },
+            {
+                title: "How active are you?",
+                subtitle: "This affects your calorie needs",
+                field: "activityLevel",
+                type: "select",
+                options: [
+                    { value: "sedentary", text: "Sedentary (desk job, no exercise)" },
+                    { value: "light", text: "Lightly active (light exercise 1-3 days/week)" },
+                    { value: "moderate", text: "Moderately active (moderate exercise 3-5 days/week)" },
+                    { value: "very", text: "Very active (hard exercise 6-7 days/week)" },
+                    { value: "extra", text: "Extra active (very hard exercise, physical job)" }
+                ]
+            },
+            {
+                title: "What's your weight goal?",
+                subtitle: "Target weight you want to achieve",
+                field: "weightGoalKg",
+                type: "number",
+                placeholder: "e.g., 65",
+                unit: "kg"
+            },
+            {
+                title: "Daily activity goal",
+                subtitle: "How many minutes of activity per day?",
+                field: "targetActivityMinutes",
+                type: "number",
+                placeholder: "e.g., 30",
+                unit: "minutes"
+            }
+        ];
+
+        function updateProgress() {
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('stepInfo').textContent = `Step ${currentStep} of ${totalSteps}`;
+        }
+
+        function renderQuestion() {
+            const question = questions[currentStep - 1];
+            const container = document.getElementById('questionContainer');
+
+            let html = `
+                <div class="question">
+                    <h2>${question.title}</h2>
+                    <p>${question.subtitle}</p>
+            `;
+
+            if (question.type === 'select') {
+                html += `
+                    <select id="currentInput" class="form-input">
+                        <option value="">Select your activity level</option>
+                        ${question.options.map(opt => `<option value="${opt.value}">${opt.text}</option>`).join('')}
+                    </select>
+                `;
+            } else {
+                html += `
+                    <input type="${question.type}" id="currentInput" class="form-input"
+                           placeholder="${question.placeholder}" ${question.unit ? `data-unit="${question.unit}"` : ''}>
+                `;
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+
+            // Set existing value if any
+            if (formData[question.field] !== undefined) {
+                document.getElementById('currentInput').value = formData[question.field];
+            }
+        }
+
+        function updateUI() {
+            updateProgress();
+            renderQuestion();
+            document.getElementById('backBtn').style.display = currentStep > 1 ? 'block' : 'none';
+            document.getElementById('nextBtn').textContent = currentStep === totalSteps ? 'Complete Setup' : 'Next';
+        }
+
+        function handleBack() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateUI();
+            }
+        }
+
+        const fs = getFirestore();
+
+        async function completeSetup(uid){
+          if (saving) return;
+          saving = true;
+          const nextBtn = document.getElementById('nextBtn');
+          if (nextBtn){ nextBtn.disabled = true; nextBtn.textContent = 'Saving…'; }
+
+          const heightCm = Number(formData.heightCm);
+          const weightKg = Number(formData.weightKg);
+          const weightGoalKg = Number(formData.weightGoalKg);
+          const targetActivityMinutes = Number(formData.targetActivityMinutes);
+
+          const payload = {
+            heightCm: Number.isFinite(heightCm) ? heightCm : null,
+            weightKg: Number.isFinite(weightKg) ? weightKg : null,
+            weightGoalKg: Number.isFinite(weightGoalKg) ? weightGoalKg : null,
+            activityLevel: formData.activityLevel || null,
+            targetActivityMinutes: Number.isFinite(targetActivityMinutes) ? targetActivityMinutes : null,
+            onboarded: true,
+            updatedAt: serverTimestamp()
+          };
+
+          log('saving profile (FS)', payload);
+          try {
+            await setDoc(doc(fs, 'users', uid), payload, { merge: true });
+            log('save OK (FS), redirecting');
+            errToast('Setup saved! Redirecting…');
+            window.location.replace('dashboard.html');
+            setTimeout(() => { try{ window.location.href = 'dashboard.html'; }catch(_){} }, 150);
+          } catch(e) {
+            console.error('[questionnaire] save failed', e);
+            errToast(`Could not save your setup. ${e?.code || ''} ${e?.message || e}`);
+          } finally {
+            saving = false;
+            if (nextBtn){ nextBtn.disabled = false; nextBtn.textContent = currentStep === totalSteps ? 'Complete Setup' : 'Next'; }
+          }
+        }
+
+        function handleNext(uid) {
+            const question = questions[currentStep - 1];
+            const input = document.getElementById('currentInput');
+            const val = (input?.value || '').toString().trim();
+
+            log('step input', { step: currentStep, field: question.field, value: val });
+            if (!val) {
+                errToast('Please fill in this field');
+                return;
+            }
+            if (question.type === 'number' && !/^\d+(?:\.\d+)?$/.test(val)) {
+                errToast('Please enter a valid number');
+                return;
+            }
+
+            formData[question.field] = val;
+
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateUI();
+            } else {
+                // Complete setup: write to Firestore and redirect
+                completeSetup(uid);
+            }
+        }
+
+        // Wire buttons after we know auth state
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.replace('signin.html');
+                return;
+            }
+
+            document.getElementById('nextBtn').onclick = () => handleNext(user.uid);
+            document.getElementById('backBtn').onclick = handleBack;
+
+            log('auth ok', user.uid);
+
+            // Initialize UI
+            updateUI();
+        });
+  </script>
+</body>
+</html>
