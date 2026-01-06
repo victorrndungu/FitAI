@@ -164,6 +164,7 @@ Victor Ndung'u
 ## 🙏 Acknowledgments
 
 - shadcn/ui for the beautiful component library
+- Lovable for easing front end development
 - Firebase for backend services
 - USDA FoodData Central API for comprehensive nutrition data
 - OpenAI/ChatGPT for AI-powered health and wellness guidance
