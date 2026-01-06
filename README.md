@@ -157,13 +157,9 @@ yarn dev
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📄 License
-
-[Add your license information here]
-
 ## 👥 Authors
 
-[Add author information here]
+Victor Ndung'u
 
 ## 🙏 Acknowledgments
 
@@ -172,3 +168,19 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - USDA FoodData Central API for comprehensive nutrition data
 - OpenAI/ChatGPT for AI-powered health and wellness guidance
 - The Kenyan fitness community for inspiration
+
+## Screenshots
+<img width="456" height="402" alt="image" src="https://github.com/user-attachments/assets/a909feae-9885-411a-99b1-97acc2cf9ace" />
+<img width="456" height="405" alt="image" src="https://github.com/user-attachments/assets/ac23fd4e-3d7b-4bce-b52c-8606ab5d5e70" />
+<img width="456" height="405" alt="image" src="https://github.com/user-attachments/assets/31a30785-a754-4f72-9f92-8699542f7c02" />
+<img width="456" height="405" alt="image" src="https://github.com/user-attachments/assets/26de2eda-0f04-4302-bff7-81af9d35f52d" />
+<img width="456" height="405" alt="image" src="https://github.com/user-attachments/assets/c0f546c9-382d-4944-b84c-ba8d86dd2fd3" />
+<img width="456" height="438" alt="image" src="https://github.com/user-attachments/assets/49e19445-f1bc-42d5-9143-453d32f18d36" />
+<img width="456" height="438" alt="image" src="https://github.com/user-attachments/assets/bda04fdb-13b2-47d3-9f24-9fc0864753e3" />
+<img width="456" height="405" alt="image" src="https://github.com/user-attachments/assets/268b81c3-f9e3-4f78-b029-7fc123ccb1cb" />
+
+
+
+
+
+
